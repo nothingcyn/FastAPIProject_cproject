@@ -6,410 +6,628 @@
     <title>数据上传部分</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* 全局CSS变量 */
+        :root {
+            --primary-bg: #e2dede;
+            --secondary-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ================== 样式部分保持不变 ================== */
         /* PyTorch风格的顶部导航栏 */
-        .top-navigation {
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            padding: 8px 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            position: relative;
-            z-index: 1000;
-            overflow: hidden;
-        }
+        .top-navigation { background: linear-gradient(135deg, #ececec 0%, #7d7f80 100%); padding: 8px 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); position: relative; z-index: 1000; overflow: hidden; }
+        .top-navigation::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 100%; background-image: radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(107, 107, 255, 0.1) 0%, transparent 50%); background-size: 100% 100%; z-index: -1; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: #ffffff; font-size: 20px; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .logo-icon { width: 26px; height: 26px; background: linear-gradient(135deg, #ff6b6b, #4ecdc4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .nav-buttons { display: flex; gap: 15px; align-items: center; }
+        .nav-btn { padding: 8px 16px; border: none; border-radius: 0; font-weight: 500; cursor: pointer; transition: all 0.3s ease; background: transparent; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; position: relative; text-decoration: none; display: inline-block; }
+        .nav-btn:hover { color: #ffffff; background: rgba(255, 255, 255, 0.05); }
+        .nav-btn.active { color: #58a6ff; border-bottom: 2px solid #58a6ff; }
+        .join-btn { background: #238636; color: #ffffff; padding: 8px 16px; border-radius: 4px; font-weight: 600; transition: all 0.3s ease; font-size: 14px; }
+        .join-btn:hover { background: #2ea043; color: #ffffff; }
+        body { background: #ffffff; color: #1f2937; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .page { display: none; animation: fadeIn 0.5s ease-in; min-height: auto; }
+        .page.active { display: block; }
+        .content-container { width: 100%; margin: 0 auto; padding: 50px 20px; background: #ffffff; min-height: auto; }
+        #admin-register.page.active { display: block; }
+        #user-forms.page { height: auto; overflow: visible; }
+        .full-width-container { width: 100%; margin: 0; padding: 0; height: auto; overflow: visible; min-height: 500px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .form-trigger-btn { border-radius: 4px; font-weight: 600; padding: 10px 20px; transition: all 0.3s ease; margin: 0 10px; }
+        .form-trigger-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+        .card { border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 100, 200, 0.1); transition: all 0.3s ease; border: 1px solid rgba(0, 100, 200, 0.15); background: #ffffff; }
+        .card:hover { box-shadow: 0 8px 24px rgba(0, 100, 200, 0.15); transform: translateY(-2px); }
+        .card-header { border-radius: 8px 8px 0 0; font-weight: 600; background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); border-bottom: 1px solid #1565c0; color: #ffffff; }
+        .text-muted { color: #94a3b8 !important; }
+        .card-body { color: #1f2937; }
 
-        .top-navigation::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background-image:
-                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(107, 107, 255, 0.1) 0%, transparent 50%);
-            background-size: 100% 100%;
-            z-index: -1;
-        }
+        .table { margin-bottom: 0; width: 100%; min-width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; }
+        .table thead th { vertical-align: bottom; border-bottom: 2px solid var(--accent-blue); background: var(--gradient-primary); color: #ffffff; position: sticky; top: 0; z-index: 10; white-space: nowrap; min-width: fit-content; text-overflow: ellipsis; overflow: hidden; padding: 14px 16px; font-weight: 600; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .table tbody { background-color: var(--card-bg); }
+        .table tbody tr { transition: all 0.3s ease; border-bottom: 1px solid var(--border-color); }
+        .table tbody tr:hover { background-color: rgba(14, 165, 233, 0.05); transform: translateY(-1px); }
+        .table tbody tr:last-child { border-bottom: none; }
+        .table tbody td { vertical-align: middle; padding: 12px 16px; white-space: nowrap; color: var(--text-primary); }
+        .table tbody input.form-control { height: 44px; margin: 0; padding: 8px 12px; width: 100%; box-sizing: border-box; }
+        .table-responsive { height: calc(100% - 60px); overflow-y: auto; overflow-x: auto; width: 100%; }
+        #form1-content, #form2-content { height: calc(100vh - 60px); width: 100%; margin: 0; padding: 0; }
+        .form-content { display: none; margin-top: 0; animation: slideIn 0.4s ease-in; height: calc(100vh - 60px); }
+        .form-content.active { display: flex; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
 
-        .nav-container {
+        .form-control:focus, .form-select:focus { border-color: #1976d2; box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1); outline: none; }
+        .btn { background: #1976d2; border: 1px solid #1565c0; color: #ffffff; border-radius: 6px; padding: 8px 16px; transition: all 0.3s ease; font-weight: 500; }
+        .btn:hover { background: #1565c0; border-color: #1565c0; color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transform: translateY(-1px); }
+        .btn-primary { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); border-color: #1565c0; }
+        .btn-primary:hover { background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-color: #0d47a1; }
+        .btn-secondary { background: #64b5f6; border-color: #64b5f6; color: #ffffff; }
+        .btn-secondary:hover { background: #42a5f5; border-color: #42a5f5; }
+        .btn-outline-primary { color: #1976d2; border-color: #1976d2; background: #ffffff; }
+        .btn-outline-primary:hover { background: #1976d2; border-color: #1976d2; color: #ffffff; }
+        .full-width-container > * { width: 100%; }
+        .frist-dashboard-container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 顶部导航 */
+        .frist-dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .frist-welcome-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .frist-app-logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .frist-app-logo i {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frist-search-section {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        .frist-search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--primary-bg);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .frist-search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .frist-user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .frist-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* 主内容网格 */
+        .frist-dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* 左侧边栏 */
+        .frist-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 卡片基础样式 */
+        .frist-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .frist-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .frist-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .frist-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .frist-card-action {
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .frist-card-action:hover {
+            color: var(--accent-blue);
+        }
+
+        /* 个人资料卡片 */
+        .frist-profile-card {
+            text-align: center;
+        }
+
+        .frist-profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+
+        .frist-profile-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .frist-profile-role {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .frist-profile-stats {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .frist-stat-item {
+            text-align: center;
+        }
+
+        .frist-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .frist-stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* 任务进度卡片 */
+        .frist-tasks-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .frist-task-progress {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .logo {
-            color: #ffffff;
-            font-size: 20px;
-            font-weight: bold;
-            text-decoration: none;
+        .frist-task-info {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            flex-direction: column;
         }
 
-        .logo-icon {
-            width: 26px;
-            height: 26px;
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .nav-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 0;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: transparent;
-            color: #c9d1d9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 16px;
-            position: relative;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .nav-btn:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-btn.active {
-            color: #58a6ff;
-            border-bottom: 2px solid #58a6ff;
-        }
-
-        /* 特别的注册按钮 */
-        .join-btn {
-            background: #238636;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        .frist-task-name {
             font-size: 14px;
+            font-weight: 500;
         }
 
-        .join-btn:hover {
-            background: #2ea043;
-            color: #ffffff;
-        }
-
-        /* 基础样式 */
-        body {
-            background: #ffffff;
-            color: #1f2937;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* 页面切换动画 */
-        .page {
-            display: none;
-            animation: fadeIn 0.5s ease-in;
-            min-height: auto;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* 内容容器 - 白色背景 */
-        .content-container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 50px 20px;
-            background: #ffffff;
-            min-height: auto;
-        }
-
-        /* 为管理员页面添加特定样式 */
-        #admin-register.page.active {
-            display: block;
-        }
-
-        /* 调整表单页面容器 */
-        #user-forms.page {
-            height: auto;
-            overflow: visible;
-        }
-
-        /* 修复全屏容器 */
-        .full-width-container {
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            height: auto;
-            overflow: visible;
-            min-height: 500px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 上传表单样式优化 */
-        .form-trigger-btn {
-            border-radius: 4px;
+        .frist-task-percentage {
+            font-size: 18px;
             font-weight: 600;
-            padding: 10px 20px;
-            transition: all 0.3s ease;
+        }
+
+        .frist-priority-task .frist-task-percentage {
+            color: #f97316;
+        }
+
+        .frist-additional-task .frist-task-percentage {
+            color: #3b82f6;
+        }
+
+        .frist-progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .frist-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .frist-priority-task .frist-progress-fill {
+            background: linear-gradient(90deg, #f97316, #fb923c);
+        }
+
+        .frist-additional-task .frist-progress-fill {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        /* 中间内容区 */
+        .frist-main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 专注度卡片 */
+        .frist-focus-card {
+            height: fit-content;
+        }
+
+        .frist-focus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .frist-focus-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .frist-focus-period {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background-color: var(--secondary-bg);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+
+        .frist-chart-container {
+            height: 200px;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .frist-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 右侧边栏 */
+        .frist-right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 会议卡片 */
+        .frist-meetings-card {
+            height: fit-content;
+        }
+
+        .frist-meeting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .frist-meeting-item:last-child {
+            border-bottom: none;
+        }
+
+        .frist-meeting-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+
+        .frist-meeting-info {
+            flex: 1;
             margin: 0 10px;
         }
 
-        .form-trigger-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        .frist-meeting-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 3px;
         }
 
-        /* 统一卡片样式 - 技术风格 */
-        .card {
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 100, 200, 0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0, 100, 200, 0.15);
-            background: #ffffff;
+        .frist-meeting-description {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        .card:hover {
-            box-shadow: 0 8px 24px rgba(0, 100, 200, 0.15);
-            transform: translateY(-2px);
-        }
-
-        /* 卡片标题样式 - 蓝色主色调 */
-        .card-header {
-            border-radius: 8px 8px 0 0;
-            font-weight: 600;
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-            border-bottom: 1px solid #1565c0;
-            color: #ffffff;
-        }
-
-        /* 文本颜色 */
-        .text-muted {
-            color: #94a3b8 !important;
-        }
-
-        /* 卡片文本 */
-        .card-body {
-            color: #1f2937;
-        }
-
-        /* 表单按钮样式 */
-        .form-card {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .form-trigger-btn {
-            padding: 12px 24px;
-            border: 2px solid #3b82f6;
-            color: #3b82f6;
-            background: #ffffff;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        /* 表格优化 */
-        .table {
-            margin-bottom: 0;
-            height: calc(100% - 38px);
-            width: 100%;
-            min-width: 100%;
-        }
-
-        .table thead th {
-            vertical-align: bottom;
-            border-bottom: 2px solid #dee2e6;
-            background-color: #f8f9fa;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            white-space: nowrap;
-            min-width: fit-content;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            padding: 10px 12px;
-        }
-
-        .table tbody {
-            height: calc(100% - 56px);
-        }
-
-        .table tbody tr {
-            height: 60px;
-        }
-
-        .table tbody td {
-            vertical-align: middle;
-            padding: 10px 12px;
-            white-space: nowrap;
-        }
-
-        .table tbody input.form-control {
-            height: 44px;
-            margin: 0;
-            padding: 8px 12px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* 表格响应式容器优化 */
-        .table-responsive {
-            height: calc(100% - 60px);
-            overflow-y: auto;
-            overflow-x: auto;
-            width: 100%;
-        }
-
-        /* 表单内容容器 */
-        #form1-content, #form2-content {
-            height: calc(100vh - 60px);
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        .form-trigger-btn:hover {
-            background: #3b82f6;
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-
-        /* 表单内容 - 确保默认隐藏 */
-        .form-content {
-            display: none !important;
-            margin-top: 0;
-            animation: slideIn 0.4s ease-in;
-            height: calc(100vh - 60px);
-        }
-
-        .form-content.active {
-            display: block !important;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* 输入框样式 - 技术风格 */
-        .form-control, .form-select, .form-range {
-            background: #ffffff;
-            border: 1px solid #90caf9;
-            color: #1f2937;
-            border-radius: 6px;
-            padding: 8px 12px;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-            outline: none;
-        }
-
-        /* 按钮样式 - 技术风格 */
-        .btn {
-            background: #1976d2;
-            border: 1px solid #1565c0;
-            color: #ffffff;
-            border-radius: 6px;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
+        .frist-meeting-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
             font-weight: 500;
         }
 
-        .btn:hover {
-            background: #1565c0;
-            border-color: #1565c0;
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            transform: translateY(-1px);
+        .frist-status-upcoming {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-blue);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-            border-color: #1565c0;
+        /* 技能发展卡片 */
+        .frist-skills-card {
+            height: fit-content;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-            border-color: #0d47a1;
+        .frist-skill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
 
-        .btn-secondary {
-            background: #64b5f6;
-            border-color: #64b5f6;
-            color: #ffffff;
+        .frist-skill-info {
+            display: flex;
+            flex-direction: column;
         }
 
-        .btn-secondary:hover {
-            background: #42a5f5;
-            border-color: #42a5f5;
+        .frist-skill-name {
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .btn-outline-primary {
-            color: #1976d2;
-            border-color: #1976d2;
-            background: #ffffff;
+        .frist-skill-percentage {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        .btn-outline-primary:hover {
-            background: #1976d2;
-            border-color: #1976d2;
-            color: #ffffff;
+        .frist-skill-bar {
+            width: 80px;
+            height: 4px;
+            background-color: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
         }
 
-        /* 进度条样式 */
-        .form-range {
-            background: rgba(0, 0, 0, 0.5);
+        .frist-skill-fill {
+            height: 100%;
+            border-radius: 2px;
+            background-color: var(--accent-blue);
         }
 
-        .form-range::-webkit-slider-thumb {
-            background: #00ffff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .frist-dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .frist-sidebar {
+                grid-column: 1;
+            }
+
+            .frist-main-content {
+                grid-column: 2;
+            }
+
+            .frist-right-sidebar {
+                grid-column: 1 / -1;
+                grid-template-columns: repeat(2, 1fr);
+                display: grid;
+            }
         }
 
-        /* 标题样式 */
-        h2, h3, h5, h6 {
-            color: #1f2937;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @media (max-width: 768px) {
+            .frist-dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .frist-search-section {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+            }
+
+            .frist-dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .frist-sidebar,
+            .frist-main-content,
+            .frist-right-sidebar {
+                grid-column: 1;
+            }
+
+            .frist-right-sidebar {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* 用户信息文本样式 */
-        .user-info-text {
-            color: #000000;
-            font-weight: bold;
-            font-size: 1.5rem;
-            margin: 0;
+        /* 可复用卡片类 */
+        .frist-reusable-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: all 0.3s ease;
         }
 
-        /* 确保所有子元素都继承全宽 */
-        .full-width-container > * {
-            width: 100%;
+        .frist-reusable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 布局辅助类 */
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+        
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .justify-end {
+            justify-content: flex-end;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+
+        .pt-4 {
+            padding-top: 1rem;
+        }
+
+        .border-t {
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .text-gray-700 {
+            color: #4b5563;
+        }
+
+        .text-blue-600 {
+            color: #2563eb;
+        }
+
+        .text-purple-600 {
+            color: #7c3aed;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .bg-gray-200 {
+            background-color: #e5e7eb;
+        }
+
+        .bg-blue-600 {
+            background-color: #2563eb;
+        }
+
+        .bg-purple-600 {
+            background-color: #7c3aed;
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .h-2 {
+            height: 0.5rem;
+        }
+
+        .border-gray-100 {
+            border-color: #f3f4f6;
+        }
+
+        .hover\:bg-gray-50:hover {
+            background-color: #f9fafb;
+        }
+
+        .text-gray-900 {
+            color: #111827;
         }
     </style>
 </head>
 <body>
-    <!-- PyTorch风格的顶部导航栏 -->
+    <!-- 顶部导航栏 -->
     <nav class="top-navigation">
         <div class="nav-container">
             <a href="#" class="logo">
@@ -418,9 +636,11 @@
             </a>
             <div class="nav-buttons">
                 <button class="nav-btn btn-user active" onclick="showPage('user-info')">用户信息</button>
-                <button class="nav-btn btn-form" onclick="showPage('user-forms')">数据提交</button>
-                 {% if role == "admin" %}
-                 <!--  页面3：用户注册 -->
+                <button class="nav-btn btn-template" onclick="showPage('template-download')">模板下载</button>
+                <button class="nav-btn btn-form" onclick="showPage('user-forms')">实验数据提交</button>
+                <button class="nav-btn btn-calculation" onclick="showPage('calculation-form')">计算数据提交</button>
+                 {% if role == "ADMIN" %}
+                <button class="nav-btn btn-admin" onclick="handleRankingClick()">进度查询</button>
                 <button class="nav-btn btn-admin" onclick="handleRegisterClick()">用户注册</button>
                  {% endif %}
                 <button class="nav-btn join-btn" onclick="window.location.href='/logout'"> 退出登录</button>
@@ -431,257 +651,693 @@
     <div class="content-container">
         <!-- 页面1: 用户信息 -->
         <div id="user-info" class="page active">
-            <div class="row justify-content-center mt-4">
-                <div class="col-md-6">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-primary text-white">
-                            <h3 class="text-center">📊 系统用户信息</h3>
+            <div class="frist-dashboard-container">
+                <div class="frist-dashboard-grid">
+                    <!-- 左侧边栏 -->
+                    <div class="frist-sidebar">
+            <!-- 个人资料卡片 -->
+            <div class="frist-card frist-profile-card">
+                <div class="frist-profile-avatar">K</div>
+                <div class="frist-profile-name">{{ username }}</div>
+                <div class="frist-profile-role">{{section}}</div>
+                <div class="frist-profile-stats">
+                    <div class="frist-stat-item">
+                        <div class="frist-stat-value">{{this_month_count}}</div>
+                        <div class="frist-stat-label">Month</div>
+                    </div>
+                    <div class="frist-stat-item">
+                        <div class="frist-stat-value">{{total_count}}</div>
+                        <div class="frist-stat-label">All</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务进度卡片 -->
+            <div class="frist-card frist-tasks-card">
+                <div class="frist-card-header">
+                    <div class="frist-card-title">Task Progress</div>
+                    <div class="frist-card-action">View All</div>
+                </div>
+                <div class="frist-task-progress frist-priority-task">
+                    <div class="frist-task-info">
+                        <div class="frist-task-name">Priority Tasks</div>
+                    </div>
+                    <div class="frist-task-percentage">0%</div>
+                </div>
+                <div class="frist-progress-bar">
+                    <div class="frist-progress-fill" style="width: 83%;"></div>
+                </div>
+                <div class="frist-task-progress frist-additional-task">
+                    <div class="frist-task-info">
+                        <div class="frist-task-name">Additional Tasks</div>
+                    </div>
+                    <div class="frist-task-percentage">0%</div>
+                </div>
+                <div class="frist-progress-bar">
+                    <div class="frist-progress-fill" style="width: 56%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间内容区 -->
+        <div class="frist-main-content">
+            <!-- 占比表卡片 -->
+            <div class="frist-card frist-focus-card">
+                <div class="frist-focus-header">
+                    <div class="frist-focus-title">数据提交占比</div>
+                    <div class="frist-focus-period">
+                        <span>本月</span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <!-- 占比表 -->
+                    <div class="space-y-4">
+                        <!-- 占比项 1 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">实验部分</span>
+                                <span class="text-sm font-medium text-blue-600">65%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="mb-4">
-                                <div class="h1" style="color: #ffffff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">👤</div>
+                        
+                        <!-- 占比项 2 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">计算部分</span>
+                                <span class="text-sm font-medium text-purple-600">35%</span>
                             </div>
-                            <div class="mb-4 border-bottom border-primary">
-                                <h5 class="text-dark">用户名</h5>
-                                <p class="text-dark fs-4 font-bold">{{ username }}</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 35%"></div>
                             </div>
-                            <div class="mb-4 border-bottom border-primary">
-                                <h5 class="text-dark">角色权限</h5>
-                                <p class="text-dark fs-4 font-bold">{{ role }}</p>
-                            </div>
-                            <div class="mb-4">
-                                <h5 class="text-dark">用户Id</h5>
-                                <p class="text-dark fs-4 font-bold">{{ user_id }}</p>
+                        </div>
+                        
+                        <!-- 总计 -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-gray-900">总计提交</span>
+                                <span class="text-sm font-semibold text-gray-900">12</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- 右侧边栏 -->
+        <div class="frist-right-sidebar">
+            <!-- 最近提交记录卡片 -->
+            <div class="frist-card frist-meetings-card">
+                <div class="frist-card-header">
+                    <div class="frist-card-title">最近提交记录</div>
+                </div>
+                <div class="space-y-3">
+                    {% for time in recent_submissions %}
+                        <div class="p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ time if time else "暂无提交" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 
         <!-- 页面2: 用户提交表单 -->
         <div id="user-forms" class="page">
             <div class="full-width-container">
-                <h2 class="mb-5 text-center p-4 text-primary">选择要上传的文件类型</h2>
+                <h2 class="mb-5 text-center p-4 text-primary">         </h2>
 
-                <!-- 表单触发按钮 -->
-                <div id="form-buttons-container" class="mb-5 text-center p-2">
-                    <button class="btn btn-primary form-trigger-btn" onclick="toggleForm('form1-content')">
-                        实验部分 - Excel上传
-                    </button>
-                    <button class="btn btn-primary form-trigger-btn" onclick="toggleForm('form2-content')">
-                        计算部分 - Excel上传
-                    </button>
-                </div>
+                <!-- 页面3: 表格预览弹窗 -->
+                <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+                  <!-- modal-xl: 特大宽屏 -->
+                  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                      <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="previewModalLabel">表格预览</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
+                      </div>
 
-                <!-- 表单内容 -->
-                <div id="form1-content" class="form-content d-flex flex-column h-100 w-100">
-                    <div class="card h-100 border-0 shadow w-100">
-                        <div class="card-header bg-primary text-white">
-                            <h3 class="text-center"> 实验部分</h3>
+                      <div class="modal-body" style="padding: 0;">
+                        <style>
+                            /* 确保滚动条始终可见 */
+                            .table-container::-webkit-scrollbar {
+                                width: 12px;
+                                height: 12px;
+                            }
+                            .table-container::-webkit-scrollbar-track {
+                                background: #f1f1f1;
+                                border-radius: 6px;
+                            }
+                            .table-container::-webkit-scrollbar-thumb {
+                                background: #888;
+                                border-radius: 6px;
+                            }
+                            .table-container::-webkit-scrollbar-thumb:hover {
+                                background: #555;
+                            }
+                            /* 确保表格容器占据整个可用空间 */
+                            .table-container {
+                                width: 100%;
+                                max-height: calc(100vh - 200px);
+                                overflow: auto;
+                                position: relative;
+                                scrollbar-width: auto;
+                                -ms-overflow-style: auto;
+                            }
+                            /* 确保表格有最小宽度以触发水平滚动条 */
+                            .table-wrapper {
+                                min-width: 1000px;
+                            }
+                        </style>
+                        <div class="table-container">
+                            <!-- 现代数据表格风格 -->
+                            <table class="table table-striped table-bordered" id="previewTable" style="border: 1px solid #e2e8f0; border-radius: 6px 6px 0 0; overflow: hidden; width: 100%;">
+                              <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10;">
+                                <tr id="previewTableHeader">
+                                    <th style="width: 150px; text-align: center; font-weight: bold; color: #000000;">操作</th>
+                                    <th style="width: 60px; text-align: center; font-weight: bold; color: #000000;">#</th>
+                                    <!-- JS 自动填充 -->
+                                </tr>
+                              </thead>
+                              <tbody id="previewTableBody" style="background-color: #ffffff;">
+                                    <!-- JS 自动填充 -->
+                              </tbody>
+                            </table>
                         </div>
-                        <div class="card-body d-flex flex-column justify-content-center align-items-center h-100">
-                            <div class="text-center mb-5">
-                                <div class="h1 mb-3 text-primary">📄</div>
-                                <h4 class="text-primary">上传Excel文件</h4>
-                                <p class="text-muted">请上传符合实验部分格式的Excel文件</p>
-                            </div>
+                      </div>
 
-                            <form id="file-upload-form-1" class="w-100 max-w-lg mx-auto" enctype="multipart/form-data" method="POST" action="/upload-form1">
-                                <div class="mb-4">
-                                    <label for="file-1" class="form-label">选择Excel文件</label>
-                                    <input type="file" id="file-1" name="file" class="form-control border-primary" accept=".xlsx, .xls" required>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="description-1" class="form-label">文件描述（可选）</label>
-                                    <textarea id="description-1" name="description" class="form-control border-primary" rows="3" placeholder="请输入文件描述..."></textarea>
-                                </div>
-
-                                <div class="d-flex gap-3 w-100">
-                                    <button type="submit" class="btn btn-primary w-100">上传文件</button>
-                                    <button type="button" class="btn btn-outline-primary w-50" onclick="returnToFormSelection()">返回</button>
-                                </div>
-                            </form>
-
-                            <div class="mt-5 text-center text-muted">
-                                <p>支持的文件格式：.xlsx, .xls</p>
-                                <p>文件大小限制：20MB</p>
-                            </div>
-                        </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-success" onclick="confirmUploadAction()">确定上传</button>
+                      </div>
                     </div>
+                  </div>
                 </div>
 
-                <div id="form2-content" class="form-content d-flex flex-column h-100 w-100">
-                    <div class="card h-100 border-0 shadow w-100">
-                        <div class="card-header bg-primary text-white border-bottom">
-                            <h3 class="text-center m-0">计算部分文件上传</h3>
+                <!-- 现代简洁风格表单 -->
+                <div class="d-flex flex-column h-100 w-100">
+                    <div class="card h-100 border-0 shadow w-100" style="border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                        <div class="card-header" style="background: #ffffff; border-bottom: 1px solid #e2e8f0; color: #1f2937; padding: 24px 16px;">
+                            <h3 class="text-center" style="margin: 0;">实验数据提交</h3>
                         </div>
-                        <div class="card-body d-flex flex-column justify-content-center align-items-center h-100">
-                            <div class="text-center mb-5">
-                                <div class="h1 mb-3 text-primary">📄</div>
-                                <h4 class="text-primary">上传Excel文件</h4>
-                                <p class="text-muted">请上传符合计算部分格式的Excel文件</p>
-                            </div>
-
-                            <form id="file-upload-form-2" class="w-100 max-w-lg mx-auto" enctype="multipart/form-data" method="POST" action="/upload-form2">
-                                <div class="mb-4">
-                                    <label for="file-2" class="form-label">选择Excel文件</label>
-                                    <input type="file" id="file-2" name="file" class="form-control border-primary" accept=".xlsx, .xls" required>
+                        <div class="card-body d-flex flex-column justify-content-center h-100" style="padding: 30px;">
+                            <form id="file-upload-form-1" class="w-100 max-w-lg mx-auto" enctype="multipart/form-data" method="POST" action="/upload-form1">
+                                <div class="mb-6">
+                                    <label for="experiment-category" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">实验分类</label>
+                                    <select id="experiment-category" name="experiment_category" class="form-select" required style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px;">
+                                        <option value="" disabled selected>请选择实验分类</option>
+                                        <option value="co">Co基合成气催化转化</option>
+                                        <option value="fe">Fe基催化合成气费托合成</option>
+                                        <option value="coal">煤直接液化催化剂性能</option>
+                                        <option value="naphtha">石脑油芳构化</option>
+                                        <option value="fetoil">费托油加氢异构化</option>
+                                        <option value="fetowax">费托蜡加氢裂化</option>
+                                    </select>
+                                    <p class="text-muted text-sm mt-1">选择您要提交的实验数据所属分类</p>
                                 </div>
-
-                                <div class="mb-4">
-                                    <label for="description-2" class="form-label">文件描述（可选）</label>
-                                    <textarea id="description-2" name="description" class="form-control border-primary" rows="3" placeholder="请输入文件描述..."></textarea>
+                                <div class="mb-6">
+                                    <label for="file-1" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">Excel文件</label>
+                                    <input type="file" id="file-1" name="file" class="form-control" accept=".xlsx, .xls" required style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px;">
+                                    <p class="text-muted text-sm mt-1">请上传符合所选分类格式的Excel文件</p>
                                 </div>
-
-                                <div class="d-flex gap-3 w-100">
-                                    <button type="submit" class="btn btn-primary w-100">上传文件</button>
-                                    <button type="button" class="btn btn-outline-primary w-50" onclick="returnToFormSelection()">返回</button>
+                                <div class="mb-6">
+                                    <label for="description-1" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">文件描述</label>
+                                    <textarea id="description-1" name="description" class="form-control" rows="3" placeholder="请输入文件描述..." style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px; resize: vertical;"></textarea>
+                                    <p class="text-muted text-sm mt-1">描述文件内容和用途（可选）</p>
+                                </div>
+                                <div class="w-100 mb-4">
+                                    <button type="submit" class="btn" style="background: #cbd8f3; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; font-weight: 500; width: 100%; transition: all 0.2s ease;">内容预览检查</button>
+                                </div>
+                                <div class="mt-4 text-center text-muted">
+                                    <p class="text-sm">支持的文件格式：.xlsx, .xls</p>
+                                    <p class="text-sm">文件大小限制：20MB</p>
                                 </div>
                             </form>
-
-                            <div class="mt-5 text-center text-muted">
-                                <p>支持的文件格式：.xlsx, .xls</p>
-                                <p>文件大小限制：20MB</p>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!--  页面4：退出登录 -->
-        <div id="logout" class="page">
+        <!-- 页面4: 计算数据提交 -->
+        <div id="calculation-form" class="page">
+            <div class="full-width-container">
+                <h2 class="mb-5 text-center p-4 text-primary">    </h2>
 
+                <!-- 现代简洁风格表单 -->
+                <div class="d-flex flex-column h-100 w-100">
+                    <div class="card h-100 border-0 shadow w-100" style="border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                        <div class="card-header" style="background: #ffffff; border-bottom: 1px solid #e2e8f0; color: #1f2937; padding: 24px 16px;">
+                            <h3 class="text-center" style="margin: 0;">计算数据提交</h3>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center h-100" style="padding: 30px;">
+                            <form id="file-upload-form-2" class="w-100 max-w-lg mx-auto" enctype="multipart/form-data" method="POST" action="/upload-form2">
+                                <div class="mb-6">
+                                    <label for="calculation-category" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">计算分类</label>
+                                    <select id="calculation-category" name="calculation_category" class="form-select" required style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px;">
+                                        <option value="" disabled selected>请选择计算分类</option>
+                                        <option value="dft">DFT计算</option>
+                                        <option value="ml">机器学习预测</option>
+                                    </select>
+                                    <p class="text-muted text-sm mt-1">选择您要提交的计算数据所属分类</p>
+                                </div>
+                                <div class="mb-6">
+                                    <label for="file-2" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">Excel文件</label>
+                                    <input type="file" id="file-2" name="file" class="form-control" accept=".xlsx, .xls" required style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px;">
+                                    <p class="text-muted text-sm mt-1">请上传符合所选分类格式的Excel文件</p>
+                                </div>
+                                <div class="mb-6">
+                                    <label for="description-2" class="form-label" style="font-weight: 500; margin-bottom: 8px; display: block;">文件描述</label>
+                                    <textarea id="description-2" name="description" class="form-control" rows="3" placeholder="请输入文件描述..." style="border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; width: 100%; font-size: 14px; resize: vertical;"></textarea>
+                                    <p class="text-muted text-sm mt-1">描述文件内容和用途（可选）</p>
+                                </div>
+                                <div class="w-100 mb-4">
+                                    <button type="submit" class="btn" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; font-weight: 500; width: 100%; transition: all 0.2s ease;">内容预览检查</button>
+                                </div>
+                                <div class="mt-4 text-center text-muted">
+                                    <p class="text-sm">支持的文件格式：.xlsx, .xls</p>
+                                    <p class="text-sm">文件大小限制：20MB</p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- 页面3: 模板下载 -->
+        <div id="template-download" class="page">
+            <div class="full-width-container">
+                <h2 class="mb-5 text-center p-4 text-primary">     </h2>
+                <div class="card-container" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px; max-width:900px; margin:0 auto;">
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-Co基合成气催化转化数据集</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/Co基合成气催化转化数据集.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-Fe基催化合成气费托合成数据集</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/Fe基催化合成气费托合成数据集.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-煤直接液化催化剂性能参数表头总结</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/煤直接液化催化剂性能参数表头总结.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-石脑油芳构化数据集</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/石脑油芳构化数据集.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-费托油加氢异构化数据集</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/费托油加氢异构化数据集.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="frist-card">
+                        <div class="frist-card-header">
+                            <div class="frist-card-title">实验数据-费托蜡加氢裂化</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="text-gray-700 mb-4">用于规范记录实验文献数据</p>
+                            <div class="flex justify-end">
+                                <a class="btn btn-primary" href="/static/datadownload/费托蜡加氢裂化.xlsx">下载</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  页面4：退出登录 -->
+        <div id="logout" class="page"></div>
     </div>
 
+    <!-- 引入 Bootstrap JS (核心) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+        // ================== 1. 全局工具函数 ==================
+
+        // 处理“确定上传”按钮点击（必须放在最外层）
+        function confirmUploadAction() {
+            const modalEl = document.getElementById('previewModal');
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalEl);
+            }
+            modal.hide();
+
+            // 提示并刷新
+            setTimeout(() => {
+                alert("✅ 确认成功！数据已入库。");
+                // window.location.reload();
+            }, 200);
+        }
+
         // 页面切换功能
         function showPage(pageId) {
-            // 隐藏所有页面
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-                page.style.display = 'none';
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
             });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-            // 移除所有按钮的活跃状态
-            const buttons = document.querySelectorAll('.nav-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-
-            // 显示选中的页面
             const selectedPage = document.getElementById(pageId);
-            selectedPage.classList.add('active');
-            selectedPage.style.display = 'block';
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                selectedPage.style.display = 'block';
+            }
 
-            // 激活对应的按钮
             const buttonMap = {
                 'user-info': '.btn-user',
                 'user-forms': '.btn-form',
-                'admin-register': '.btn-admin'
+                'calculation-form': '.btn-calculation',
+                'admin-register': '.btn-admin',
+                'template-download': '.btn-template'
             };
-
             if (buttonMap[pageId]) {
                 document.querySelector(buttonMap[pageId]).classList.add('active');
             }
 
-            // 无论切换到哪个页面，都确保所有表单内容隐藏
+            // 重置表单页
             const allForms = document.querySelectorAll('.form-content');
-            allForms.forEach(form => {
-                form.classList.remove('active');
-            });
-
-            // 如果切换到用户表单页面，显示表单选择按钮
+            allForms.forEach(form => form.classList.remove('active'));
             if (pageId === 'user-forms') {
                 const buttonsContainer = document.getElementById('form-buttons-container');
-                buttonsContainer.style.display = 'block';
+                if(buttonsContainer) buttonsContainer.style.display = 'block';
             } else {
                 const buttonsContainer = document.getElementById('form-buttons-container');
-                if (buttonsContainer) {
-                    buttonsContainer.style.display = 'none';
-                }
+                if (buttonsContainer) buttonsContainer.style.display = 'none';
             }
 
-            // 滚动到页面顶部
             window.scrollTo(0, 0);
         }
 
-        function handleRegisterClick() {
-            // 1. 获取后端传过来的角色信息
-            // 注意：{{ role }} 是 Jinja2 语法，后端渲染时会变成字符串，比如 "user" 或 "admin"
-            // 建议转为小写比较，防止数据库里存的是 "ADMIN"
-            const userRole = "{{ role }}".toLowerCase();
+        // 切换表单显示
+        function toggleForm(formId) {
+            const btnContainer = document.getElementById('form-buttons-container');
+            if (btnContainer) btnContainer.style.display = 'none';
 
-            // 2. 判断逻辑
-            if (userRole === 'admin') {
-                // 是管理员 -> 跳转到独立的注册页面
+            document.querySelectorAll('.form-content').forEach(f => {
+                f.classList.remove('active');
+                f.style.display = 'none';
+            });
+
+            const target = document.getElementById(formId);
+            if (target) {
+                target.classList.add('active');
+                target.style.display = 'flex';
+            }
+            tainer = document.getElementById('form-buttons-container');
+            if (btnContainer) btnContainer.style.display = 'block';
+        }
+        // 管理员注册跳转
+        function handleRankingClick() {
+            const userRole = "{{ role }}";
+
+            if (userRole === 'ADMIN') {
+                window.location.href = "/ranking";
+            } else {
+                alert("⚠️ 权限不足：只有管理员可以执行此操作！");
+            }
+        }
+        // 管理员注册跳转
+        function handleRegisterClick() {
+            const userRole = "{{ role }}";
+
+            if (userRole === 'ADMIN') {
                 window.location.href = "/admin/register";
             } else {
-                // 不是管理员 -> 弹窗警告，哪儿也不去
                 alert("⚠️ 权限不足：只有管理员可以执行此操作！");
             }
         }
 
-        // 表单切换功能
-        function toggleForm(formId) {
-            const formContent = document.getElementById(formId);
-            const buttonsContainer = document.getElementById('form-buttons-container');
-
-            // 隐藏所有表单
-            const allForms = document.querySelectorAll('.form-content');
-            allForms.forEach(form => {
-                form.classList.remove('active');
-                form.style.display = 'none';
+        // 编辑行功能
+        function editRow(index) {
+            const rows = document.querySelectorAll('#previewTableBody tr');
+            const row = rows[index];
+            const cells = row.querySelectorAll('td:not(:nth-child(1)):not(:nth-child(2))');
+            
+            cells.forEach(cell => {
+                const currentValue = cell.textContent;
+                cell.innerHTML = `<input type="text" value="${currentValue}" style="width: 100%; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px 8px;">`;
             });
+            
+            // 更改操作列按钮为保存和取消
+            const actionTd = row.querySelector('td:nth-child(1)');
+            actionTd.innerHTML = `
+                <button class="btn btn-sm" style="background: #10b981; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="saveRow(${index})">保存</button>
+                <button class="btn btn-sm" style="background: #64748b; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="cancelEdit(${index})">取消</button>
+            `;
+        }
 
-            // 显示当前表单
-            formContent.classList.add('active');
-            formContent.style.display = 'block';
+        // 保存编辑
+        function saveRow(index) {
+            const rows = document.querySelectorAll('#previewTableBody tr');
+            const row = rows[index];
+            const inputs = row.querySelectorAll('input[type="text"]');
+            const cells = row.querySelectorAll('td:not(:nth-child(1)):not(:nth-child(2))');
+            
+            inputs.forEach((input, cellIndex) => {
+                cells[cellIndex].textContent = input.value;
+            });
+            
+            // 恢复操作按钮
+            const actionTd = row.querySelector('td:nth-child(1)');
+            actionTd.innerHTML = `
+                <button class="btn btn-sm" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="editRow(${index})">修改</button>
+                <button class="btn btn-sm" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="clearRow(${index})">清空</button>
+            `;
+        }
 
-            // 隐藏表单按钮
-            if (buttonsContainer) {
-                buttonsContainer.style.display = 'none';
+        // 取消编辑
+        function cancelEdit(index) {
+            const rows = document.querySelectorAll('#previewTableBody tr');
+            const row = rows[index];
+            const inputs = row.querySelectorAll('input[type="text"]');
+            const cells = row.querySelectorAll('td:not(:nth-child(1)):not(:nth-child(2))');
+            
+            // 恢复原始值（这里简化处理，实际应该从数据源恢复）
+            inputs.forEach((input, cellIndex) => {
+                cells[cellIndex].textContent = input.value;
+            });
+            
+            // 恢复操作按钮
+            const actionTd = row.querySelector('td:nth-child(1)');
+            actionTd.innerHTML = `
+                <button class="btn btn-sm" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="editRow(${index})">修改</button>
+                <button class="btn btn-sm" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="clearRow(${index})">清空</button>
+            `;
+        }
+
+        // 清空行功能
+        function clearRow(index) {
+            const rows = document.querySelectorAll('#previewTableBody tr');
+            const row = rows[index];
+            const cells = row.querySelectorAll('td:not(:nth-child(1)):not(:nth-child(2))');
+            
+            // 清空所有单元格内容
+            cells.forEach(cell => {
+                cell.textContent = "";
+            });
+        }
+
+        // 更新行序号
+        function updateRowIndices() {
+            const rows = document.querySelectorAll('#previewTableBody tr');
+            
+            rows.forEach((row, index) => {
+                const indexCell = row.querySelector('td:nth-child(2)');
+                if (indexCell) {
+                    indexCell.textContent = index + 1;
+                }
+            });
+        }
+
+        // ================== 2. 通用上传逻辑 ==================
+
+        async function handleFileUpload(event, formId) {
+            event.preventDefault(); // 阻止页面刷新
+
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+
+            // 锁定按钮
+            btn.disabled = true;
+            btn.textContent = "⏳ 处理中...";
+
+            try {
+                // 获取 action (即 /upload-form1 或 /upload-form2)
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === "uploaded") {
+                    // 1. 填充表头
+                    const headerRow = document.getElementById("previewTableHeader");
+                    headerRow.innerHTML = "";
+                    
+                    // 添加操作列（放在最左边）
+                    const actionTh = document.createElement("th");
+                    actionTh.style.width = "150px";
+                    actionTh.style.textAlign = "center";
+                    actionTh.style.fontWeight = "bold";
+                    actionTh.style.color = "#000000";
+                    actionTh.textContent = "操作";
+                    headerRow.appendChild(actionTh);
+                    
+                    // 添加序号列
+                    const indexTh = document.createElement("th");
+                    indexTh.style.width = "60px";
+                    indexTh.style.textAlign = "center";
+                    indexTh.style.fontWeight = "bold";
+                    indexTh.style.color = "#000000";
+                    indexTh.textContent = "#";
+                    headerRow.appendChild(indexTh);
+                    
+                    // 添加数据列
+                    (result.summary.columns || []).forEach(col => {
+                        const th = document.createElement("th");
+                        th.style.fontWeight = "bold";
+                        th.style.color = "#000000";
+                        th.textContent = col;
+                        headerRow.appendChild(th);
+                    });
+
+                    // 2. 填充内容
+                    const tbody = document.getElementById("previewTableBody");
+                    tbody.innerHTML = "";
+                    
+                    // 兼容 preview
+                    let rows = result.summary.preview || [];
+                    
+                    // 确保至少有10行
+                    while (rows.length < 10) {
+                        // 创建空行，长度与列数相同
+                        const emptyRow = Array(result.summary.columns ? result.summary.columns.length : 0).fill("");
+                        rows.push(emptyRow);
+                    }
+
+                    rows.forEach((row, index) => {
+                        const tr = document.createElement("tr");
+                        
+                        // 添加操作按钮（放在最左边）
+                        const actionTd = document.createElement("td");
+                        actionTd.style.textAlign = "center";
+                        actionTd.style.width = "150px";
+                        actionTd.style.display = "flex";
+                        actionTd.style.justifyContent = "space-around";
+                        actionTd.style.alignItems = "center";
+                        actionTd.style.padding = "10px";
+                        actionTd.style.height = "100%";
+                        actionTd.style.verticalAlign = "middle";
+                        actionTd.innerHTML = `
+                            <button class="btn btn-sm" style="background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="editRow(${index})">修改</button>
+                            <button class="btn btn-sm" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; flex: 1; margin: 0 2px; height: 28px; display: flex; align-items: center; justify-content: center;" onclick="clearRow(${index})">清空</button>
+                        `;
+                        tr.appendChild(actionTd);
+                        
+                        // 添加序号（从1到10）
+                        const indexTd = document.createElement("td");
+                        indexTd.style.textAlign = "center";
+                        indexTd.textContent = index + 1;
+                        tr.appendChild(indexTd);
+                        
+                        // 添加数据单元格
+                        row.forEach(cell => {
+                            const td = document.createElement("td");
+                            td.textContent = (cell === null) ? "" : cell;
+                            tr.appendChild(td);
+                        });
+                        
+                        tbody.appendChild(tr);
+                    });
+
+                    // 3. 显示弹窗
+                    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+                    modal.show();
+
+                } else {
+                    alert("❌ 上传失败: " + result.error);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("❌ 系统错误: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 
-        // 返回表单选择界面
-        function returnToFormSelection() {
-            const buttonsContainer = document.getElementById('form-buttons-container');
+        // ================== 3. 初始化绑定 ==================
 
-            // 隐藏所有表单
-            const allForms = document.querySelectorAll('.form-content');
-            allForms.forEach(form => {
-                form.classList.remove('active');
-                form.style.display = 'none';
-            });
-
-            // 显示表单按钮
-            if (buttonsContainer) {
-                buttonsContainer.style.display = 'block';
-            }
-        }
-
-        // 页面加载后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 隐藏所有表单内容
-            const allForms = document.querySelectorAll('.form-content');
-            allForms.forEach(form => {
-                form.classList.remove('active');
-            });
-
-            // 确保表单按钮显示
-            const buttonsContainer = document.getElementById('form-buttons-container');
-            if (buttonsContainer) {
-                buttonsContainer.style.display = 'block';
+            // 绑定 Form 1
+            const form1 = document.getElementById("file-upload-form-1");
+            if (form1) {
+                form1.addEventListener("submit", function(e) {
+                    handleFileUpload(e, "file-upload-form-1");
+                });
             }
 
-            // 确保第一个页面正确显示
-            const firstPage = document.querySelector('.page.active');
-            if (firstPage) {
-                firstPage.style.display = 'block';
+            // 绑定 Form 2
+            const form2 = document.getElementById("file-upload-form-2");
+            if (form2) {
+                form2.addEventListener("submit", function(e) {
+                    handleFileUpload(e, "file-upload-form-2");
+                });
             }
+
+            // 初始化界面
+            document.querySelectorAll('.form-content').forEach(f => f.style.display = 'none');
+            const btnContainer = document.getElementById('form-buttons-container');
+            if (btnContainer) btnContainer.style.display = 'block';
+
+            const activePage = document.querySelector('.page.active');
+            if (activePage) activePage.style.display = 'block';
         });
     </script>
 </body>

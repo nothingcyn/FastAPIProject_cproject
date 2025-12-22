@@ -60,8 +60,8 @@
                             <div class="mb-3">
                                 <label class="form-label">角色</label>
                                 <select name="role" class="form-select" required>
-                                    <option value="user">普通用户</option>
-                                    <option value="admin">管理员</option>
+                                    <option value="USER">普通用户</option>
+                                    <option value="ADMIN">管理员</option>
                                 </select>
                             </div>
 
@@ -78,7 +78,9 @@
 
 <!-- 弹窗 + 表单回填 JS -->
     <script>
-        const alertMsg = {{ alert_msg | tojson | default('null') }};
+        const alertMsg = "{{ alert_msg | tojson | default('null') }}";
+        // 解析JSON字符串为对象
+        const parsedAlertMsg = alertMsg === 'null' ? null : JSON.parse(alertMsg);
 
         function showToast(message, type="success", duration=1000) {
             if (!message) return;
@@ -107,8 +109,8 @@
         }
 
         // 如果有 alert_msg，就弹窗
-        if (alertMsg) {
-            showToast(alertMsg.msg, alertMsg.type);
+        if (parsedAlertMsg) {
+            showToast(parsedAlertMsg.msg, parsedAlertMsg.type);
         }
 
         // 回填角色选择
